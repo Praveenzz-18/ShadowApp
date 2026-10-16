@@ -1,0 +1,89 @@
+{
+  "app_metadata": {
+    "package_name": "com.simpletools.calculator",
+    "app_name": "Simple Calc Pro",
+    "stated_category": "Tools / Calculator",
+    "stated_description": "A clean, lightweight, offline scientific calculator with basic arithmetic, trigonometry, and currency history cached locally. Works 100% offline with zero advertisements or tracking.",
+    "ui_strings": [
+      "Clear",
+      "Equals",
+      "History",
+      "Sin",
+      "Cos",
+      "Tan",
+      "Calculate",
+      "Memory Store",
+      "Recall"
+    ],
+    "version_code": 104,
+    "version_name": "1.4.0",
+    "min_sdk": 26,
+    "target_sdk": 34
+  },
+  "static_features": {
+    "requested_permissions": [
+      "android.permission.VIBRATE"
+    ],
+    "dangerous_permissions": [],
+    "exported_components": [
+      "com.simpletools.calculator.MainActivity"
+    ],
+    "suspicious_api_calls": [],
+    "hardcoded_urls": [],
+    "suspicious_receivers": [],
+    "total_permissions_count": 1,
+    "uses_reflection": false,
+    "uses_dynamic_code_loading": false,
+    "uses_crypto": false
+  },
+  "dynamic_features": {
+    "runtime_api_invocations": [
+      "android.os.Vibrator.vibrate"
+    ],
+    "network_connections": [],
+    "file_system_modifications": [
+      "/data/data/com.simpletools.calculator/databases/calc_history.db"
+    ],
+    "ssl_pinning_bypassed": false,
+    "dex_class_loaded": [],
+    "sms_sent": false,
+    "location_accessed": false,
+    "contacts_accessed": false,
+    "background_traffic_mb": 0.0
+  },
+  "ml_scores": {
+    "malware_probability": 0.02,
+    "purpose_mismatch_score": 1.5,
+    "expected_permissions": [
+      "android.permission.VIBRATE"
+    ],
+    "unexpected_permissions": [],
+    "unexpected_runtime_apis": [],
+    "top_shap_features": [
+      {
+        "feature_name": "perm::VIBRATE",
+        "importance_score": -0.35,
+        "direction": "decreases_risk",
+        "description": "Standard haptic feedback permission aligned with interactive calculator buttons."
+      },
+      {
+        "feature_name": "net::ZERO_CONNECTIONS",
+        "importance_score": -0.42,
+        "direction": "decreases_risk",
+        "description": "Zero external network activity confirms advertised offline nature."
+      }
+    ],
+    "anomaly_classification": "Benign / Expected"
+  },
+  "llm_explanation": {
+    "overall_risk_level": "LOW",
+    "executive_summary": "The application behaves strictly within its advertised functional scope as an offline scientific calculator. It requests only haptic vibration feedback for button taps and performs zero outbound network transmission or privileged system access.",
+    "purpose_behavior_contradictions": [],
+    "privacy_risks": [],
+    "recommended_actions": [
+      "Safe for immediate consumer and enterprise deployment.",
+      "No security remediations or privilege restrictions required."
+    ]
+  },
+  "analyzed_at": "2026-10-16T15:30:00.000Z"
+}

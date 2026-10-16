@@ -1,0 +1,6 @@
+{
+  "name": "ShadowApp - Mobile Malware Purpose-Behavior Detector",
+  "description": "Detects malicious behavior hidden behind normal mobile apps by identifying purpose-vs-behavior mismatches between declared capabilities and static/dynamic telemetry.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

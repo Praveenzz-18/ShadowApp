@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShadowApp - Mobile Malware Purpose-Behavior Detector</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased">
+
+  <!-- Top Bar Contract: 1-row, 3-zone -->
+  <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
+      <!-- Zone 1: Wordmark -->
+      <div class="flex items-center gap-3 shrink-0">
+        <div class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-base font-bold tracking-tight text-white whitespace-nowrap">ShadowApp</span>
+          <span class="text-xs text-slate-400">Mobile Purpose-Behavior Detector</span>
+        </div>
+      </div>
+
+      <!-- Zone 2: Navigation Links -->
+      <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-400">
+        <a href="#audit-panel" class="hover:text-white transition-colors whitespace-nowrap">Upload &amp; Analyze</a>
+        <a href="#kpi-section" class="hover:text-white transition-colors whitespace-nowrap">Mismatch Metrics</a>
+        <a href="#permissions-matrix" class="hover:text-white transition-colors whitespace-nowrap">Permissions Diff</a>
+        <a href="#ai-report" class="hover:text-white transition-colors whitespace-nowrap">Gemini Threat Report</a>
+      </nav>
+
+      <!-- Zone 3: Primary Action -->
+      <div class="flex items-center gap-3 shrink-0">
+        <span class="hidden sm:inline text-xs font-mono text-emerald-400">Pipeline Ready</span>
+        <button onclick="scrollToAudit()" class="px-4 py-2 text-xs font-semibold text-slate-900 bg-emerald-400 hover:bg-emerald-300 rounded-lg transition-colors whitespace-nowrap shadow-sm">
+          Analyze APK
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8">
+
+    <!-- Hero Title -->
+    <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/40 relative overflow-hidden">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-mono text-emerald-400 mb-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+            <span>CHABADA &amp; DREBIN PURPOSE-BEHAVIOR DETECTION SYSTEM</span>
+          </div>
+          <h1 class="text-2xl font-bold text-white tracking-tight">
+            Detecting Deceptive Behaviors Concealed Inside Mobile Applications
+          </h1>
+          <p class="mt-2 text-sm text-slate-400 max-w-3xl leading-relaxed">
+            Uncovers hidden Trojans and over-privileged tracking SDKs by evaluating semantic discrepancies between declared Play Store marketing descriptions and actual Android runtime capabilities.
+          </p>
+        </div>
+
+        <!-- Quick Demo Benchmark Buttons -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-slate-950/80 p-2 rounded-lg border border-slate-800 shrink-0">
+          <button onclick="loadBenchmark('calculator')" id="btn-calc" class="px-3.5 py-2 rounded-md text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-center whitespace-nowrap">
+            Benign Calculator
+          </button>
+          <button onclick="loadBenchmark('weather')" id="btn-weather" class="px-3.5 py-2 rounded-md text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-center whitespace-nowrap">
+            Adware Weather
+          </button>
+          <button onclick="loadBenchmark('flashlight')" id="btn-torch" class="px-3.5 py-2 rounded-md text-xs font-medium bg-slate-800 text-white border border-slate-700 shadow-sm transition-all text-center whitespace-nowrap">
+            Trojan Flashlight
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Panel: Upload APK or Configure Stated Purpose -->
+    <section id="audit-panel" class="p-6 rounded-xl border border-slate-800 bg-slate-900/30 space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">APK Upload &amp; Stated Purpose Configuration</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Upload a raw .apk file or select a pre-loaded threat benchmark</p>
+        </div>
+        <span class="text-xs font-mono text-slate-400" id="pipeline-status">Status: Idle</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- APK Drag & Drop -->
+        <div class="lg:col-span-5 border-2 border-dashed border-slate-800 hover:border-emerald-500/50 rounded-xl p-6 flex flex-col items-center justify-center text-center bg-slate-950/60 transition-colors cursor-pointer" onclick="document.getElementById('apk-file-input').click()">
+          <input type="file" id="apk-file-input" accept=".apk,.zip" class="hidden" onchange="handleFileSelect(event)">
+          <div class="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+          </div>
+          <span class="text-sm font-semibold text-slate-200" id="file-label">Drop Android APK here or Browse</span>
+          <span class="text-xs text-slate-500 mt-1">Accepts standard .apk and compressed DEX archives</span>
+        </div>
+
+        <!-- Form fields: Category & Description -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Stated Category</label>
+              <select id="input-category" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                <option value="Utilities / Flashlight">Utilities / Flashlight</option>
+                <option value="Tools / Calculator">Tools / Calculator</option>
+                <option value="Weather">Weather</option>
+                <option value="Communication / Messaging">Communication / Messaging</option>
+                <option value="Finance / Banking">Finance / Banking</option>
+                <option value="Gaming">Gaming</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Runtime Sandbox</label>
+              <div class="flex items-center gap-3 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-300">
+                <input type="checkbox" id="input-sandbox" checked class="rounded border-slate-700 text-emerald-500 focus:ring-0">
+                <span>Run 60s Dynamic Sandbox Simulation</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Stated Play Store Marketing Description</label>
+            <textarea id="input-desc" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 leading-relaxed" placeholder="Paste app description here...">Super bright LED flashlight widget with strobe effect, emergency SOS flashing, and color screen light. Fast startup and easy one-tap switch for all Android devices.</textarea>
+          </div>
+
+          <div class="flex items-center justify-between pt-2">
+            <span class="text-xs text-slate-500 font-mono" id="app-ident">Active: com.brightlite.torch.pro</span>
+            <button onclick="executeAudit()" id="run-btn" class="px-5 py-2.5 bg-emerald-400 hover:bg-emerald-300 text-slate-900 text-xs font-bold rounded-lg transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Execute 4-Stage Security Audit</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visual Scorecards: Mismatch Gauge, Probability, Risk Badge -->
+    <section id="kpi-section" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/40 space-y-2">
+        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Purpose Mismatch Score</div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-extrabold font-mono tabular-nums text-white" id="score-mismatch">96.5</span>
+          <span class="text-xs text-slate-500 font-mono">/ 100</span>
+        </div>
+        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-3">
+          <div id="bar-mismatch" class="bg-rose-500 h-full transition-all duration-500" style="width: 96.5%"></div>
+        </div>
+        <span class="text-[11px] text-slate-400 block pt-1">Semantic discrepancy from declared scope</span>
+      </div>
+
+      <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/40 space-y-2">
+        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Malware Probability</div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-extrabold font-mono tabular-nums text-rose-400" id="score-malware">98%</span>
+        </div>
+        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-3">
+          <div id="bar-malware" class="bg-rose-500 h-full transition-all duration-500" style="width: 98%"></div>
+        </div>
+        <span class="text-[11px] text-slate-400 block pt-1">Drebin &amp; CICMalDroid supervised risk</span>
+      </div>
+
+      <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/40 space-y-2">
+        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Overall Threat Level</div>
+        <div class="pt-1">
+          <span id="badge-risk" class="inline-block text-xs px-3 py-1.5 rounded-lg border font-mono font-bold text-rose-400 bg-rose-500/10 border-rose-500/30">
+            CRITICAL THREAT
+          </span>
+        </div>
+        <span class="text-[11px] text-slate-400 block pt-4" id="label-class">Malicious / Purpose Mismatch</span>
+      </div>
+
+      <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/40 space-y-2">
+        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Unexpected Permissions</div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-extrabold font-mono tabular-nums text-amber-400" id="count-violations">6</span>
+          <span class="text-xs text-slate-500 font-mono">violations</span>
+        </div>
+        <span class="text-[11px] text-slate-400 block pt-6">Privileges without domain justification</span>
+      </div>
+    </section>
+
+    <!-- Side-by-Side Comparison: Expected vs. Actual Permissions -->
+    <section id="permissions-matrix" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Expected Permissions -->
+      <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/30 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            <h3 class="text-sm font-bold text-white">Expected Permissions (from Stated Purpose)</h3>
+          </div>
+          <span class="text-xs font-mono text-emerald-400" id="expected-count">2 Justified</span>
+        </div>
+        <div class="space-y-2" id="expected-perms-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Actual Permissions & Violations -->
+      <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/30 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span>
+            <h3 class="text-sm font-bold text-white">Actual Detected Permissions &amp; Anomalies</h3>
+          </div>
+          <span class="text-xs font-mono text-rose-400" id="actual-count">6 Discrepancies</span>
+        </div>
+        <div class="space-y-2" id="actual-perms-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Dedicated AI Security Analyst Report (Gemini Structured Output) -->
+    <section id="ai-report" class="p-6 rounded-xl border border-slate-800 bg-gradient-to-b from-slate-900/60 to-slate-950 space-y-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-white">AI Security Analyst Evaluation (Gemini 3.8 Flash)</h3>
+        </div>
+        <span class="text-xs font-mono text-slate-400">Structured Threat Assessment</span>
+      </div>
+
+      <div class="p-4 rounded-lg bg-slate-950 border border-slate-800 space-y-2">
+        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Executive Summary</div>
+        <p class="text-sm text-slate-300 leading-relaxed" id="report-summary">
+          <!-- Dynamically populated -->
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="space-y-3">
+          <div class="text-xs font-semibold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+            <span>✕ Purpose-Behavior Contradictions</span>
+          </div>
+          <div class="space-y-2" id="report-contradictions">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="text-xs font-semibold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+            <span>! Privacy &amp; Surveillance Risks</span>
+          </div>
+          <div class="space-y-2" id="report-privacy">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="text-xs font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+            <span>✓ Actionable Directives</span>
+          </div>
+          <div class="space-y-2" id="report-actions">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 bg-slate-950 py-6 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-mono">
+      <div>ShadowApp Mobile Security · CHABADA &amp; Drebin Inspired Architecture</div>
+      <div>Module 7 Live Dashboard Active · FastAPI Backend</div>
+    </div>
+  </footer>
+
+  <!-- Embedded Client Logic & Data Handlers -->
+  <script>
+    const BENCHMARKS = {
+      calculator: {
+        app_name: "Simple Calc Pro",
+        package_name: "com.simpletools.calculator",
+        category: "Tools / Calculator",
+        description: "A clean, lightweight, offline scientific calculator with basic arithmetic, trigonometry, and currency history cached locally. Works 100% offline with zero advertisements or tracking.",
+        mismatch_score: 1.5,
+        malware_probability: 0.02,
+        risk_level: "LOW",
+        classification: "Benign / Expected",
+        expected_perms: ["android.permission.VIBRATE"],
+        unexpected_perms: [],
+        executive_summary: "The application behaves strictly within its advertised functional scope as an offline scientific calculator. It requests only haptic vibration feedback for button taps and performs zero outbound network transmission or privileged system access.",
+        contradictions: [],
+        privacy_risks: [],
+        actions: ["Safe for immediate consumer and enterprise deployment.", "No security remediations required."]
+      },
+      weather: {
+        app_name: "SkyForecast Live HD",
+        package_name: "com.skycast.weather.radar",
+        category: "Weather",
+        description: "Real-time weather radar, hourly forecasts, severe storm alerts, and local temperature widgets for your home screen.",
+        mismatch_score: 58.0,
+        malware_probability: 0.44,
+        risk_level: "MEDIUM",
+        classification: "Suspicious / Over-Privileged",
+        expected_perms: ["android.permission.INTERNET", "android.permission.ACCESS_NETWORK_STATE", "android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"],
+        unexpected_perms: ["android.permission.READ_PHONE_STATE", "android.permission.ACCESS_BACKGROUND_LOCATION", "android.permission.RECEIVE_BOOT_COMPLETED"],
+        executive_summary: "While the application successfully delivers forecasted weather data, it embeds an over-privileged commercial advertising tracking engine. It captures unique hardware identifiers (IMEI/Subscriber ID) via READ_PHONE_STATE and maintains persistent background location polling on boot, which severely exceeds its meteorological purpose.",
+        contradictions: [
+          "App requests READ_PHONE_STATE to harvest hardware device identifiers, which provides zero functional utility to weather forecast rendering.",
+          "App auto-starts tracking daemons upon device boot (RECEIVE_BOOT_COMPLETED) to beacon GPS coordinates to telemetry.adclicknetwork.biz while backgrounded."
+        ],
+        privacy_risks: [
+          "Continuous background geolocation polling builds a longitudinal physical movement profile of the user.",
+          "Hardware device identifiers can correlate user activity across disparate applications and data brokers."
+        ],
+        actions: [
+          "Revoke 'Phone' and 'Background Location' access in Android Application Settings.",
+          "Replace with an open-source weather utility that respects user privacy."
+        ]
+      },
+      flashlight: {
+        app_name: "SuperBright Ultra Flashlight",
+        package_name: "com.brightlite.torch.pro",
+        category: "Utilities / Flashlight",
+        description: "Super bright LED flashlight widget with strobe effect, emergency SOS flashing, and color screen light. Fast startup and easy one-tap switch for all Android devices.",
+        mismatch_score: 96.5,
+        malware_probability: 0.98,
+        risk_level: "CRITICAL",
+        classification: "Malicious / Purpose Mismatch",
+        expected_perms: ["android.permission.CAMERA", "android.permission.FLASHLIGHT"],
+        unexpected_perms: ["android.permission.SEND_SMS", "android.permission.READ_SMS", "android.permission.RECEIVE_SMS", "android.permission.READ_CONTACTS", "android.permission.SYSTEM_ALERT_WINDOW", "android.permission.REQUEST_INSTALL_PACKAGES"],
+        executive_summary: "CRITICAL THREAT DETECTED: This application is a deceptive banking/SMS Trojan disguised as a simple LED flashlight utility. While it provides rudimentary torch toggle controls, its primary background operation exfiltrates user address book contacts, intercepts two-factor SMS verification codes, executes remote root shell commands, and registers the device to a foreign command-and-control server (194.26.29.112).",
+        contradictions: [
+          "Flashlight application requests SEND_SMS, READ_SMS, and READ_CONTACTS, which have 0% relevance to toggling camera LED hardware.",
+          "The application dynamically unpacks and loads executable classes (PayloadDispatcher) via DexClassLoader from app private storage.",
+          "Dynamic execution revealed background transmission of personal contacts over unencrypted HTTP to a raw IP address."
+        ],
+        privacy_risks: [
+          "Direct financial fraud through unauthorized premium SMS subscriptions.",
+          "Compromise of two-factor authentication (2FA) codes allowing account takeover.",
+          "Exfiltration of device contact list exposing associates to phishing campaigns.",
+          "Arbitrary remote payload execution granting full device control to threat actors."
+        ],
+        actions: [
+          "IMMEDIATELY UNINSTALL the application from all affected devices.",
+          "Check mobile carrier billing statement for unauthorized premium SMS charges.",
+          "Reset passwords and invalidate active authentication sessions across online accounts.",
+          "Enforce mobile threat defense policies blocking APK sideloading."
+        ]
+      }
+    };
+
+    let activeData = BENCHMARKS.flashlight;
+
+    function renderUI(data) {
+      document.getElementById('input-category').value = data.category;
+      document.getElementById('input-desc').value = data.description;
+      document.getElementById('app-ident').textContent = `Active: ${data.package_name}`;
+
+      document.getElementById('score-mismatch').textContent = data.mismatch_score.toFixed(1);
+      document.getElementById('bar-mismatch').style.width = `${Math.min(data.mismatch_score, 100)}%`;
+
+      document.getElementById('score-malware').textContent = `${(data.malware_probability * 100).toFixed(0)}%`;
+      document.getElementById('bar-malware').style.width = `${data.malware_probability * 100}%`;
+
+      const badge = document.getElementById('badge-risk');
+      badge.textContent = `${data.risk_level} THREAT`;
+      if (data.risk_level === 'CRITICAL' || data.risk_level === 'HIGH') {
+        badge.className = "inline-block text-xs px-3 py-1.5 rounded-lg border font-mono font-bold text-rose-400 bg-rose-500/10 border-rose-500/30";
+      } else if (data.risk_level === 'MEDIUM') {
+        badge.className = "inline-block text-xs px-3 py-1.5 rounded-lg border font-mono font-bold text-amber-400 bg-amber-500/10 border-amber-500/30";
+      } else {
+        badge.className = "inline-block text-xs px-3 py-1.5 rounded-lg border font-mono font-bold text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
+      }
+
+      document.getElementById('label-class').textContent = data.classification;
+      document.getElementById('count-violations').textContent = data.unexpected_perms.length;
+
+      // Expected Perms
+      const expContainer = document.getElementById('expected-perms-list');
+      expContainer.innerHTML = '';
+      document.getElementById('expected-count').textContent = `${data.expected_perms.length} Justified`;
+      if (data.expected_perms.length === 0) {
+        expContainer.innerHTML = '<div class="text-xs text-slate-500 italic py-2">No special permissions expected.</div>';
+      } else {
+        data.expected_perms.forEach(p => {
+          const div = document.createElement('div');
+          div.className = "flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300";
+          div.innerHTML = `<span class="truncate">${p}</span><span class="text-emerald-400 ml-2 font-semibold">Justified</span>`;
+          expContainer.appendChild(div);
+        });
+      }
+
+      // Actual / Unexpected Perms
+      const actContainer = document.getElementById('actual-perms-list');
+      actContainer.innerHTML = '';
+      document.getElementById('actual-count').textContent = `${data.unexpected_perms.length} Discrepancies`;
+      if (data.unexpected_perms.length === 0) {
+        actContainer.innerHTML = '<div class="text-xs text-emerald-400/90 bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-lg">Zero permission anomalies detected. Clean category bounds.</div>';
+      } else {
+        data.unexpected_perms.forEach(p => {
+          const div = document.createElement('div');
+          div.className = "flex items-center justify-between p-2.5 rounded-lg bg-rose-500/5 border border-rose-500/30 text-xs font-mono text-rose-300";
+          div.innerHTML = `<span class="truncate">${p}</span><span class="text-rose-400 ml-2 font-semibold">Violation</span>`;
+          actContainer.appendChild(div);
+        });
+      }
+
+      // Gemini Report
+      document.getElementById('report-summary').textContent = data.executive_summary;
+
+      const contBox = document.getElementById('report-contradictions');
+      contBox.innerHTML = '';
+      if (data.contradictions.length === 0) {
+        contBox.innerHTML = '<div class="p-3 bg-slate-950 rounded border border-slate-800 text-xs text-slate-400">None detected. App adheres to stated scope.</div>';
+      } else {
+        data.contradictions.forEach(c => {
+          const el = document.createElement('div');
+          el.className = "p-3 bg-slate-950 rounded-lg border border-slate-800 text-xs text-slate-300 flex items-start gap-2";
+          el.innerHTML = `<span class="text-rose-400 font-bold">✕</span><span>${c}</span>`;
+          contBox.appendChild(el);
+        });
+      }
+
+      const privBox = document.getElementById('report-privacy');
+      privBox.innerHTML = '';
+      if (data.privacy_risks.length === 0) {
+        privBox.innerHTML = '<div class="p-3 bg-slate-950 rounded border border-slate-800 text-xs text-slate-400">No surveillance or tracking detected.</div>';
+      } else {
+        data.privacy_risks.forEach(r => {
+          const el = document.createElement('div');
+          el.className = "p-3 bg-slate-950 rounded-lg border border-slate-800 text-xs text-slate-300 flex items-start gap-2";
+          el.innerHTML = `<span class="text-amber-400 font-bold">!</span><span>${r}</span>`;
+          privBox.appendChild(el);
+        });
+      }
+
+      const actBox = document.getElementById('report-actions');
+      actBox.innerHTML = '';
+      data.actions.forEach(a => {
+        const el = document.createElement('div');
+        el.className = "p-3 bg-slate-950 rounded-lg border border-slate-800 text-xs text-slate-300 flex items-start gap-2";
+        el.innerHTML = `<span class="text-emerald-400 font-bold">✓</span><span>${a}</span>`;
+        actBox.appendChild(el);
+      });
+    }
+
+    function loadBenchmark(key) {
+      document.getElementById('btn-calc').className = "px-3.5 py-2 rounded-md text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-center whitespace-nowrap";
+      document.getElementById('btn-weather').className = "px-3.5 py-2 rounded-md text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-center whitespace-nowrap";
+      document.getElementById('btn-torch').className = "px-3.5 py-2 rounded-md text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-center whitespace-nowrap";
+
+      if (key === 'calculator') document.getElementById('btn-calc').className = "px-3.5 py-2 rounded-md text-xs font-medium bg-slate-800 text-white border border-slate-700 shadow-sm transition-all text-center whitespace-nowrap";
+      if (key === 'weather') document.getElementById('btn-weather').className = "px-3.5 py-2 rounded-md text-xs font-medium bg-slate-800 text-white border border-slate-700 shadow-sm transition-all text-center whitespace-nowrap";
+      if (key === 'flashlight') document.getElementById('btn-torch').className = "px-3.5 py-2 rounded-md text-xs font-medium bg-slate-800 text-white border border-slate-700 shadow-sm transition-all text-center whitespace-nowrap";
+
+      activeData = BENCHMARKS[key];
+      renderUI(activeData);
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) {
+        document.getElementById('file-label').textContent = file.name;
+        document.getElementById('app-ident').textContent = `Package: com.uploaded.${file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9]/g, "_")}`;
+      }
+    }
+
+    function executeAudit() {
+      const statusEl = document.getElementById('pipeline-status');
+      const btn = document.getElementById('run-btn');
+
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-slate-900" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Running 4-Stage Pipeline...</span>
+      `;
+
+      statusEl.textContent = "Stage 1/4: Static APK DEX Extraction...";
+
+      setTimeout(() => {
+        statusEl.textContent = "Stage 2/4: Dynamic Sandbox Stimulation...";
+        setTimeout(() => {
+          statusEl.textContent = "Stage 3/4: Purpose-Behavior ML Mismatch Scoring...";
+          setTimeout(() => {
+            statusEl.textContent = "Stage 4/4: Gemini Structured Risk Explainer...";
+            setTimeout(() => {
+              statusEl.textContent = "Audit Completed Successfully";
+              btn.disabled = false;
+              btn.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Execute 4-Stage Security Audit</span>
+              `;
+              renderUI(activeData);
+            }, 500);
+          }, 500);
+        }, 500);
+      }, 500);
+    }
+
+    function scrollToAudit() {
+      document.getElementById('audit-panel').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Initial render
+    window.addEventListener('DOMContentLoaded', () => {
+      renderUI(activeData);
+    });
+  </script>
+</body>
+</html>

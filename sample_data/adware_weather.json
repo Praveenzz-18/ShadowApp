@@ -1,0 +1,168 @@
+{
+  "app_metadata": {
+    "package_name": "com.skycast.weather.radar",
+    "app_name": "SkyForecast Live HD",
+    "stated_category": "Weather",
+    "stated_description": "Real-time weather radar, hourly forecasts, severe storm alerts, and local temperature widgets for your home screen.",
+    "ui_strings": [
+      "Today",
+      "Precipitation",
+      "Wind Speed",
+      "Radar Map",
+      "Settings",
+      "Allow Location",
+      "Severe Weather Alert"
+    ],
+    "version_code": 320,
+    "version_name": "3.2.0",
+    "min_sdk": 26,
+    "target_sdk": 34
+  },
+  "static_features": {
+    "requested_permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.ACCESS_COARSE_LOCATION",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.ACCESS_BACKGROUND_LOCATION",
+      "android.permission.READ_PHONE_STATE",
+      "android.permission.RECEIVE_BOOT_COMPLETED",
+      "android.permission.WAKE_LOCK"
+    ],
+    "dangerous_permissions": [
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.ACCESS_BACKGROUND_LOCATION",
+      "android.permission.READ_PHONE_STATE"
+    ],
+    "exported_components": [
+      "com.skycast.weather.MainActivity",
+      "com.skycast.weather.tracker.BootReceiver",
+      "com.skycast.weather.AdSyncService"
+    ],
+    "suspicious_api_calls": [
+      "android.telephony.TelephonyManager.getDeviceId",
+      "android.telephony.TelephonyManager.getSubscriberId",
+      "android.location.LocationManager.requestLocationUpdates"
+    ],
+    "hardcoded_urls": [
+      "https://api.weatherdata-open.org/v2/forecast",
+      "https://telemetry.adclicknetwork.biz/tracker",
+      "https://cdn.monetize-sdk.io/event"
+    ],
+    "suspicious_receivers": [
+      "android.intent.action.BOOT_COMPLETED"
+    ],
+    "total_permissions_count": 8,
+    "uses_reflection": true,
+    "uses_dynamic_code_loading": false,
+    "uses_crypto": false
+  },
+  "dynamic_features": {
+    "runtime_api_invocations": [
+      "android.location.LocationManager.getLastKnownLocation",
+      "android.telephony.TelephonyManager.getDeviceId",
+      "android.net.wifi.WifiManager.getConnectionInfo"
+    ],
+    "network_connections": [
+      {
+        "destination_host": "api.weatherdata-open.org",
+        "destination_port": 443,
+        "protocol": "HTTPS",
+        "bytes_sent": 24500,
+        "bytes_received": 128000,
+        "is_tls": true,
+        "suspicious_indicators": []
+      },
+      {
+        "destination_host": "telemetry.adclicknetwork.biz",
+        "destination_port": 443,
+        "protocol": "HTTPS",
+        "bytes_sent": 142000,
+        "bytes_received": 4200,
+        "is_tls": true,
+        "suspicious_indicators": [
+          "Beaconing persistent device identifier (IMEI) to ad network",
+          "Periodic background geolocation broadcast every 60s"
+        ]
+      },
+      {
+        "destination_host": "cdn.monetize-sdk.io",
+        "destination_port": 443,
+        "protocol": "HTTPS",
+        "bytes_sent": 61200,
+        "bytes_received": 18400,
+        "is_tls": true,
+        "suspicious_indicators": [
+          "Third-party behavioral analytics tracker"
+        ]
+      }
+    ],
+    "file_system_modifications": [
+      "/data/data/com.skycast.weather.radar/shared_prefs/ad_profile.xml",
+      "/data/data/com.skycast.weather.radar/databases/weather_cache.db"
+    ],
+    "ssl_pinning_bypassed": false,
+    "dex_class_loaded": [],
+    "sms_sent": false,
+    "location_accessed": true,
+    "contacts_accessed": false,
+    "background_traffic_mb": 14.8
+  },
+  "ml_scores": {
+    "malware_probability": 0.44,
+    "purpose_mismatch_score": 58.0,
+    "expected_permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.ACCESS_COARSE_LOCATION",
+      "android.permission.ACCESS_FINE_LOCATION"
+    ],
+    "unexpected_permissions": [
+      "android.permission.READ_PHONE_STATE",
+      "android.permission.ACCESS_BACKGROUND_LOCATION",
+      "android.permission.RECEIVE_BOOT_COMPLETED"
+    ],
+    "unexpected_runtime_apis": [
+      "android.telephony.TelephonyManager.getDeviceId",
+      "android.net.wifi.WifiManager.getConnectionInfo"
+    ],
+    "top_shap_features": [
+      {
+        "feature_name": "perm::READ_PHONE_STATE",
+        "importance_score": 0.48,
+        "direction": "increases_risk",
+        "description": "Accessing telephony hardware state is unneeded for weather display and is exploited for device fingerprinting."
+      },
+      {
+        "feature_name": "perm::ACCESS_BACKGROUND_LOCATION",
+        "importance_score": 0.32,
+        "direction": "increases_risk",
+        "description": "Continuous background location harvesting enables tracking users outside active app usage."
+      },
+      {
+        "feature_name": "perm::RECEIVE_BOOT_COMPLETED",
+        "importance_score": 0.25,
+        "direction": "increases_risk",
+        "description": "App auto-starts on device reboot solely to maintain tracking services."
+      }
+    ],
+    "anomaly_classification": "Suspicious / Over-Privileged"
+  },
+  "llm_explanation": {
+    "overall_risk_level": "MEDIUM",
+    "executive_summary": "While the application successfully delivers forecasted weather data, it embeds an over-privileged commercial advertising tracking engine. It captures unique hardware identifiers (IMEI/Subscriber ID) via READ_PHONE_STATE and maintains persistent background location polling on boot, which severely exceeds its meteorological purpose.",
+    "purpose_behavior_contradictions": [
+      "App requests READ_PHONE_STATE to harvest hardware device identifiers, which provides zero functional utility to weather forecast rendering.",
+      "App auto-starts tracking daemons upon device boot (RECEIVE_BOOT_COMPLETED) to beacon GPS coordinates to telemetry.adclicknetwork.biz while backgrounded."
+    ],
+    "privacy_risks": [
+      "Continuous background geolocation polling builds a longitudinal physical movement profile of the user.",
+      "Hardware device identifiers can correlate user activity across disparate applications and data brokers."
+    ],
+    "recommended_actions": [
+      "Revoke 'Phone' and 'Background Location' access in Android Application Settings.",
+      "Replace with an open-source weather utility that respects user privacy and lacks invasive ad-monetization SDKs."
+    ]
+  },
+  "analyzed_at": "2026-10-16T15:31:00.000Z"
+}

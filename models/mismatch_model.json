@@ -1,0 +1,99 @@
+{
+  "version": "1.0.0",
+  "algorithm": "RandomForest + IsolationForest Purpose Mismatch Ensembler",
+  "synthetic_instances_count": 200,
+  "category_expectations": {
+    "calculator": [
+      "android.permission.VIBRATE"
+    ],
+    "flashlight": [
+      "android.permission.FLASHLIGHT",
+      "android.permission.CAMERA"
+    ],
+    "weather": [
+      "android.permission.ACCESS_COARSE_LOCATION",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_NETWORK_STATE"
+    ],
+    "messaging": [
+      "android.permission.RECORD_AUDIO",
+      "android.permission.SEND_SMS",
+      "android.permission.READ_SMS",
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.RECEIVE_SMS",
+      "android.permission.INTERNET",
+      "android.permission.CAMERA",
+      "android.permission.READ_CONTACTS"
+    ],
+    "finance": [
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.INTERNET",
+      "android.permission.USE_BIOMETRIC"
+    ],
+    "gaming": [
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.WAKE_LOCK",
+      "android.permission.INTERNET",
+      "android.permission.VIBRATE"
+    ]
+  },
+  "penalty_weights": {
+    "perm::SEND_SMS": [
+      35.0,
+      "Sending background SMS messages without user interaction"
+    ],
+    "perm::READ_SMS": [
+      30.0,
+      "Reading incoming SMS messages (potential 2FA token theft)"
+    ],
+    "perm::RECEIVE_SMS": [
+      25.0,
+      "Background interception of SMS broadcasts"
+    ],
+    "perm::READ_CONTACTS": [
+      25.0,
+      "Harvesting personal address book contacts"
+    ],
+    "perm::SYSTEM_ALERT_WINDOW": [
+      30.0,
+      "Overlay permission exploited for banking phishing windows"
+    ],
+    "perm::REQUEST_INSTALL_PACKAGES": [
+      35.0,
+      "Silent dropper capability to install secondary APKs"
+    ],
+    "perm::READ_PHONE_STATE": [
+      15.0,
+      "Accessing hardware IMEI/subscriber identifiers"
+    ],
+    "perm::ACCESS_BACKGROUND_LOCATION": [
+      20.0,
+      "Unrestricted continuous background geolocation tracking"
+    ],
+    "api::DexClassLoader": [
+      35.0,
+      "Dynamic code loading evades static antivirus scanners"
+    ],
+    "api::Runtime": [
+      30.0,
+      "Executing root shell or system binaries"
+    ],
+    "dynamic::sms_sent": [
+      45.0,
+      "Runtime verification: Outbound SMS message dispatched"
+    ],
+    "dynamic::contacts_accessed": [
+      30.0,
+      "Runtime verification: Contacts database queried"
+    ],
+    "dynamic::raw_ip_c2": [
+      35.0,
+      "Direct communication to unauthenticated numeric IP C2 node"
+    ],
+    "dynamic::unencrypted_http": [
+      15.0,
+      "Transmitting sensitive telemetry over cleartext HTTP"
+    ]
+  }
+}
